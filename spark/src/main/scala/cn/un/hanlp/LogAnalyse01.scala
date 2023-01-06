@@ -1,0 +1,56 @@
+package cn.un.hanlp
+
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
+
+import java.io.{File, PrintWriter}
+
+/**
+ * 需求1：
+ * 网站（URL）访问量统计，对URL进行过滤，统计日志数据中各个网站URL首页的访问次数，结果写入本地/root/retrievelog/output/url/part-00000,格式见步骤说明。
+ * 对URL进行过滤，获取首页网站的访问量，只统计www开头的首页网站；
+ * 过滤以www开头的所有URL，对URL进行/切分，获取首页网址，如www.tudou.com；
+ * 首页网址搜索频率统计，按首页网址分组聚合，根据频率进行降序排列；
+ * 文件保存路径为：/root/retrievelog/output/url/part-00000，结果无需分区；
+ * 示例结果：(www.tudou.com,28714) 表示网站URLwww.tudou.com的访问次数为28714。
+ */
+object LogAnalyse01 {
+
+  def main(args: Array[String]): Unit = {
+    val spark: SparkSession = SparkSession.builder()
+      .appName(this.getClass.getSimpleName.stripSuffix("$"))
+      .master("local[*]")
+      .config("spark.sql.shuffle.partitions", "3")
+      .getOrCreate()
+    val sc: SparkContext = spark.sparkContext
+
+    val fileRDD: RDD[String] = sc.textFile("D:\\ideaIU-2021.1\\workspace\\bdc-practics\\data\\SogouQ.sample")
+
+    // 过滤
+    val filterRDD: RDD[String] = fileRDD
+      .filter(log => log != null && log.trim.split("\\s+").length == 6)
+    val urlRDD: RDD[String] = filterRDD.map(_.split("\\s+")(5))
+
+    // 过滤以www开头的网址
+    val wwwRDD: RDD[String] = urlRDD.filter(_.startsWith("www"))
+    // 获取网址首页
+    val oneUrlRDD: RDD[String] = wwwRDD.map(_.split("/")(0))
+    // 计算结果
+    val resultRDD: RDD[(String, Int)] = oneUrlRDD.map((_, 1)).reduceByKey(_ + _).sortBy(_._2, false)
+
+    // 测试用户的日志
+    println(s"Count = ${resultRDD.count()}, Example = ${resultRDD.take(5).mkString(",")}")
+
+    //将结果写入文件
+    val writer = new PrintWriter(new File("F:\\result\\result01.txt"))
+    val tuples = resultRDD.collect()
+    for (elem <- tuples) {
+      writer.write("("+elem._1 + "," + elem._2 + ")\n")
+    }
+
+    sc.stop()
+
+  }
+
+}

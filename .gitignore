@@ -32,3 +32,4 @@ cp
 metastore_db
 derby.log
 spark/target
+data

@@ -107,26 +107,14 @@
       <version>5.1.47</version>
     </dependency>
     <dependency>
-      <groupId>com.alibaba</groupId>
-      <artifactId>druid</artifactId>
-      <version>1.1.10</version>
-    </dependency>
-    <dependency>
       <groupId>com.hankcs</groupId>
       <artifactId>hanlp</artifactId>
-      <version>portable-1.7.5</version>
+      <version>portable-1.8.3</version>
     </dependency>
-    <!--scala操作JDBC小工具，方便对事务进行处理-->
     <dependency>
-      <groupId>org.scalikejdbc</groupId>
-      <artifactId>scalikejdbc_2.11</artifactId>
-      <version>3.4.0</version>
-    </dependency>
-    <!-- scalikejdbc-config 2.11 -->
-    <dependency>
-      <groupId>org.scalikejdbc</groupId>
-      <artifactId>scalikejdbc-config_2.11</artifactId>
-      <version>3.4.0</version>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+      <version>1.2.41</version>
     </dependency>
   </dependencies>
 
