@@ -1,12 +1,12 @@
 package cn.un.hanlp
 
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 
-import java.io.{File, PrintWriter}
-
 /**
- * 需求：最优Rank频率，结果写入本地/root/retrievelog/output/rank/part-00000,格式见步骤说明。
+ * 需求5：最优Rank频率，结果写入本地/root/retrievelog/output/rank/part-00000,格式见步骤说明。
  *
  * 对于用户搜索请求，某URL在返回结果中的排名为1, 且用户点击的顺序号为1，这说明此URL是Rank最优；
  * 计算用户访问网站URL在返回结果中排名为1，且用户点击顺序号为1的数据所占总数据的比率；
@@ -16,13 +16,23 @@ import java.io.{File, PrintWriter}
  */
 object LogAnalyse05 {
 
-  def main(args: Array[String]): Unit = {
-    val sparkConf= new SparkConf().setMaster("local[*]").setAppName("LogAnalyse01")
+  private val hdfs_url = "hdfs://192.168.10.101:9000"
+  // 设置 hadoop用户名
+  System.setProperty("HADOOP_USER_NAME", "root")
 
-    val sc : SparkContext = new SparkContext(sparkConf)
+  def main(args: Array[String]): Unit = {
+    val spark: SparkSession = SparkSession.builder()
+      .appName(this.getClass.getSimpleName.stripSuffix("$"))
+      .master("local[*]")
+      .config("spark.sql.shuffle.partitions", "3")
+      .getOrCreate()
+    val sc: SparkContext = spark.sparkContext
+    sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
+    sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
 
     //加一个过滤
-    val fileRDD: RDD[String] = sc.textFile("D:\\ideaIU-2021.1\\workspace\\bdc-practics\\data\\SogouQ.sample")
+    val input_path: String = hdfs_url+ "/input/reduced.txt"
+    val fileRDD: RDD[String] = sc.textFile(input_path)
       .filter(_.split("\t").size==5).filter(_.split("\t")(3).split(" ").size==2)
 
     //获取排名
@@ -40,12 +50,22 @@ object LogAnalyse05 {
 
     val result=rank/sum*100
 
-    val str: String = result.formatted("%.2f")
-    println(str)
+    val resultStr: String = result.formatted("%.2f")
+    println(resultStr)
+    val resultRDD: RDD[String] = sc.parallelize(List(resultStr))
 
-    val writer = new PrintWriter(new File("F:\\result\\result05.txt"))
+    //数据保存位置
+    val data_output: String = hdfs_url + "/output/result5"
 
-    writer.write(str+"%")
+    val hdfs: FileSystem = FileSystem.get(
+      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
+    if (hdfs.exists(new Path(data_output)))
+      hdfs.delete(new Path(data_output), true)
+
+    //将结果保存到HDFS
+    resultRDD.map(x => x + "%")
+      .repartition(1)
+      .saveAsTextFile(data_output)
 
     sc.stop()
   }

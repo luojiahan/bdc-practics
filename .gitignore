@@ -33,3 +33,4 @@ metastore_db
 derby.log
 spark/target
 data
+spark-warehouse

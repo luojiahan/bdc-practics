@@ -2,11 +2,11 @@ package cn.un.hanlp
 
 import com.hankcs.hanlp.seg.common.Term
 import com.hankcs.hanlp.tokenizer.StandardTokenizer
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-import java.io.{File, PrintWriter}
 import java.util
 
 /**
@@ -22,6 +22,10 @@ import java.util
  */
 object LogAnalyse03 {
 
+  private val hdfs_url = "hdfs://192.168.10.101:9000"
+  // 设置 hadoop用户名
+  System.setProperty("HADOOP_USER_NAME", "root")
+
   def main(args: Array[String]): Unit = {
     val spark: SparkSession = SparkSession.builder()
       .appName(this.getClass.getSimpleName.stripSuffix("$"))
@@ -29,8 +33,11 @@ object LogAnalyse03 {
       .config("spark.sql.shuffle.partitions", "3")
       .getOrCreate()
     val sc: SparkContext = spark.sparkContext
+    sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
+    sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
 
-    val fileRDD: RDD[String] = sc.textFile("D:\\ideaIU-2021.1\\workspace\\bdc-practics\\data\\SogouQ.sample")
+    val input_path: String = hdfs_url+ "/input/reduced.txt"
+    val fileRDD: RDD[String] = sc.textFile(input_path)
 
     // 过滤
     val filterRDD: RDD[String] = fileRDD
@@ -54,13 +61,18 @@ object LogAnalyse03 {
     //wordcount操作
     val resultRDD: RDD[(String, Int)] = value.map((_,1)).reduceByKey(_+_).sortBy(_._2,false)
 
-    val writer = new PrintWriter(new File("F:\\result\\result03.txt"))
-    val tuples = resultRDD.collect()
-    for (elem <- tuples) {
-      writer.write("("+elem._2 + "," + elem._1 + ")\n")
-    }
+    //数据保存位置
+    val data_output: String = hdfs_url + "/root/retrievelog/output/key"
 
+    val hdfs: FileSystem = FileSystem.get(
+      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
+    if (hdfs.exists(new Path(data_output)))
+      hdfs.delete(new Path(data_output), true)
 
+    //将结果保存到HDFS
+    resultRDD.map(x => "("+x._1+","+x._2+")")
+      .repartition(1)
+      .saveAsTextFile(data_output)
 
     sc.stop()
 
