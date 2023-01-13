@@ -8,6 +8,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 import java.util
+import scala.collection.mutable
 
 /**
  * 需求：
@@ -22,11 +23,12 @@ import java.util
  */
 object LogAnalyse03 {
 
-  private val hdfs_url = "hdfs://192.168.10.101:9000"
+  private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名
   System.setProperty("HADOOP_USER_NAME", "root")
 
   def main(args: Array[String]): Unit = {
+    val begTime = System.currentTimeMillis()
     val spark: SparkSession = SparkSession.builder()
       .appName(this.getClass.getSimpleName.stripSuffix("$"))
       .master("local[*]")
@@ -44,22 +46,25 @@ object LogAnalyse03 {
       .filter(log => log != null && log.trim.split("\\s+").length == 6)
     val keywordRDD: RDD[String] = filterRDD.map(_.split("\\s+")(2))
       .map(_.replaceAll("\\[|\\]", ""))
-    val hanlpRDD: RDD[util.List[Term]] = keywordRDD.map(StandardTokenizer.segment(_))
 
-    val StringRDD: RDD[String] = hanlpRDD.map(
-      str=>{
-        var re=str.get(0).word
-        for(i <- 1 to str.size()-1){
-          re=re+"|=|"+str.get(i).word
-        }
-        re
-      }
-    )
-    val value: RDD[String] = StringRDD.flatMap(_.split("\\|=\\|"))
+    val wordsRDD: RDD[String] = keywordRDD.flatMap(record => {
+      // 使用HanLP中文分词库进行标准分词
+      val terms: util.List[Term] = StandardTokenizer.segment(record.trim)
+      // 将Java中集合对转换为Scala中集合对象
+      import scala.collection.JavaConverters._
+      val words: mutable.Buffer[String] = terms.asScala.map(_.word)
+      // val userId: String = record.userId
+      // words.map(word => (userId, word))
+      words
+    })
 
-    println(s"Count = ${value.count()}, Example = ${value.take(5).mkString(",")}")
+//    println(s"Count = ${wordsRDD.count()}, Example = ${wordsRDD.take(5).mkString(",")}")
     //wordcount操作
-    val resultRDD: RDD[(String, Int)] = value.map((_,1)).reduceByKey(_+_).sortBy(_._2,false)
+    val resultRDD: RDD[(String, Int)] = wordsRDD
+      .filter(t => !t.equals(".") && !t.equals("+"))
+      .map((_,1))
+      .reduceByKey(_+_)
+      .sortBy(_._2,false)
 
     //数据保存位置
     val data_output: String = hdfs_url + "/root/retrievelog/output/key"
@@ -74,9 +79,9 @@ object LogAnalyse03 {
       .repartition(1)
       .saveAsTextFile(data_output)
 
+    val endTime = System.currentTimeMillis()
+    println("用时：" + (endTime - begTime) / 1000 + "s")
     sc.stop()
-
-
   }
 
 }

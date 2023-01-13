@@ -25,6 +25,10 @@ object SougouSearchLogAnalysis {
     val password = "199037"
     val url = "jdbc:mysql://hdp103:3306/test?useUnicode=true&characterEncoding=UTF-8&useSSL=false"
 
+    private val hdfs_url = "hdfs://hadoop000:9000"
+    // 设置 hadoop用户名
+    System.setProperty("HADOOP_USER_NAME", "root")
+
     /**
      * 用户搜索点击网页记录Record
      *
@@ -52,9 +56,12 @@ object SougouSearchLogAnalysis {
         .config("spark.sql.shuffle.partitions", "3")
         .getOrCreate()
       val sc: SparkContext = spark.sparkContext
+      sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
+      sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
 
       // TODO: 1. 本地读取SogouQ用户查询日志数据。本地文件需要加file:///
-      val rawLogsRDD: RDD[String] = sc.textFile("/data/SogouQ.sample")
+      val input_path: String = hdfs_url+ "/input/SogouQ.sample"
+      val rawLogsRDD: RDD[String] = sc.textFile(input_path)
       //println(s"Count = ${rawLogsRDD.count()}")
 
       // TODO: 2. 解析数据，封装到CaseClass样例类中

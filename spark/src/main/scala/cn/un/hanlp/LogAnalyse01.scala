@@ -19,7 +19,7 @@ import java.sql.{Connection, DriverManager, PreparedStatement}
  */
 object LogAnalyse01 {
 
-  private val hdfs_url = "hdfs://192.168.10.101:9000"
+  private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名
   System.setProperty("HADOOP_USER_NAME", "root")
 

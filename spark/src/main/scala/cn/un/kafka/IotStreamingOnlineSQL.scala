@@ -1,10 +1,10 @@
 package cn.un.kafka
 
-import cn.un.kafka.util.HbaseWriter
+import cn.un.kafka.util.{HbaseSink, JDBCSink}
 import org.apache.commons.lang3.StringUtils
 import com.alibaba.fastjson.{JSON, JSONObject}
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.streaming.{OutputMode, StreamingQuery}
+import org.apache.spark.sql.streaming.{OutputMode, ProcessingTime, StreamingQuery}
 import org.apache.spark.sql.types.{DoubleType, LongType}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
@@ -33,6 +33,8 @@ object IotStreamingOnlineSQL {
       .format("kafka")
       .option("kafka.bootstrap.servers", "hdp101:9092,hdp102:9092,hdp103:9092")
       .option("subscribe", "iotTopic")
+//      .option("startingOffsets", "earliest")
+//      .option("endingOffsets", "latest")
       // 设置每批次消费数据最大值
       .option("maxOffsetsPerTrigger", "100000")
       .load()
@@ -61,7 +63,7 @@ object IotStreamingOnlineSQL {
     // 4.1 注册DataFrame为临时视图
     etlStreamDF.createOrReplaceTempView("t_iots")
     // 4.2 编写SQL执行查询
-    val resultStreamDF: Dataset[IotStaticInfo] = spark.sql(
+    val resultStreamDF: DataFrame = spark.sql(
       """
         |SELECT
         |  device_id,
@@ -69,22 +71,23 @@ object IotStreamingOnlineSQL {
         |  COUNT(device_type) AS count_device,
         |  ROUND(AVG(signal), 2) AS avg_signal
         |FROM t_iots
-        |WHERE signal > 30 GROUP BY device_type,device_id
-        |""".stripMargin).as[IotStaticInfo]
+        |WHERE signal > 30 GROUP BY device_id, device_type
+        |""".stripMargin)
+//      .as[IotStaticInfo]
 
-    //5. 启动流式应用，结果输出控制台
-//    resultStreamDF.writeStream
-//      .format("console")
-//      .outputMode("complete")
-//      .start()
-//      .awaitTermination()
+    //使用
+    val url="jdbc:mysql://hdp103:3306/test?characterEncoding=utf8&useSSL=false"
+    val user ="root"
+    val pwd = "199037"
+    val writer = new JDBCSink(url,user, pwd)
 
-    // 5、启动流失应用，结果输出到HBase
     resultStreamDF.writeStream
-      .foreach(new HbaseWriter)
-      .outputMode("append")
+      .foreach(writer)
+      .outputMode("update")
+      .trigger(ProcessingTime("25 seconds"))
       .start()
       .awaitTermination()
+
 
   }
   //接收各个字段:{"device":"device_65","deviceType":"db","signal":12.0,"time":1589718910796}
