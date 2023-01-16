@@ -1,6 +1,6 @@
 package cn.un.kafka.util
 
-import cn.un.kafka.IotStreamingOnlineSQL.IotStaticInfo
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client.{Connection, ConnectionFactory, Put, Table}
@@ -21,28 +21,29 @@ class HbaseSink extends ForeachWriter[Row] {
   }
 
   override def process(value: Row): Unit = {
+    //create 't1','iot_info','device_type','count_device','avg_signal'
     //rowkey:调度编号+车牌号+时间戳
     //var rowkey = value.deployNum + value.plateNum + value.timeStr
-    var rowkey = value.getString(0)
+    var rowkey = value.getAs[String](0)
     val put = new Put(Bytes.toBytes(rowkey))
     // val arr: Array[String] = value.lglat.split("_")
     //device_type
     put.addColumn(
       Bytes.toBytes("iot_info"),
       Bytes.toBytes("device_type"),
-      Bytes.toBytes(value.getString(1))
+      Bytes.toBytes(value.getAs[String](1))
     )
     //count_device
     put.addColumn(
       Bytes.toBytes("iot_info"),
       Bytes.toBytes("count_device"),
-      Bytes.toBytes(value.getInt(2))
+      Bytes.toBytes(value.getAs[Long](2))
     )
     //avg_signal
     put.addColumn(
       Bytes.toBytes("iot_info"),
       Bytes.toBytes("avg_signal"),
-      Bytes.toBytes(value.getDouble(3))
+      Bytes.toBytes(value.getAs[Double](3))
     )
     table.put(put)
   }

@@ -40,6 +40,8 @@ object IotStreamingOnlineSQL {
       .load()
 
     // 3. 对获取数据进行解析，封装到DeviceData中
+    //https://stackoverflow.com/questions/57267347/append-output-mode-not-supported-when-there-are-streaming-aggregations-on-stream
+    //https://blog.csdn.net/a8131357leo/article/details/101187019
     val etlStreamDF: Dataset[IotInfo] = iotStreamDF
       // 获取value字段的值，转换为String类型
       .selectExpr("CAST(value AS STRING)")
@@ -75,18 +77,13 @@ object IotStreamingOnlineSQL {
         |""".stripMargin)
 //      .as[IotStaticInfo]
 
-    //使用
-    val url="jdbc:mysql://hdp103:3306/test?characterEncoding=utf8&useSSL=false"
-    val user ="root"
-    val pwd = "199037"
-    val writer = new JDBCSink(url,user, pwd)
-
+    //5、启动流失应用，结果输出到HBase
     resultStreamDF.writeStream
-      .foreach(writer)
-      .outputMode("update")
+    .foreach(new HbaseSink)
+    .outputMode("update")
       .trigger(ProcessingTime("25 seconds"))
-      .start()
-      .awaitTermination()
+    .start()
+    .awaitTermination()
 
 
   }
@@ -96,11 +93,5 @@ object IotStreamingOnlineSQL {
                       device_type: String,
                       signal: String,
                       time: String
-                    )
-  case class IotStaticInfo(
-                            device_id: String,
-                            device_type: String,
-                            count_device: String,
-                            avg_signal: String
                     )
 }

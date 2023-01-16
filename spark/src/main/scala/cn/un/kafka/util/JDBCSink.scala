@@ -15,10 +15,10 @@ class  JDBCSink(url:String, user:String, pwd:String) extends ForeachWriter[Row] 
     statement = connection.createStatement
     true
   }
-
+  //https://blog.csdn.net/kt1776133839/article/details/90314604
   def process(value: Row): Unit = {
     statement.executeUpdate("INSERT INTO i_iots " +
-      "VALUES (" + value.getString(0) + "," + value.getString(1) + "," + value.getLong(2) + "," + value.getDouble(3) + ")")
+      "VALUES ('" + value.getAs[String](0) + "','" + value.getAs[String](1) + "','" + value.getAs[Long](2) + "','" + value.getAs[Double](3) + "')")
   }
 
   def close(errorOrNull: Throwable): Unit = {
@@ -26,14 +26,14 @@ class  JDBCSink(url:String, user:String, pwd:String) extends ForeachWriter[Row] 
   }
 }
 //使用
-//val url="jdbc:mysql://hdp103:3306/test"
-//val user ="user"
-//val pwd = "pwd"
+//val url="jdbc:mysql://hdp103:3306/test?characterEncoding=utf8&useSSL=false"
+//val user ="root"
+//val pwd = "199037"
 //val writer = new JDBCSink(url,user, pwd)
 //
-//val query = resultStreamDF
-//.writeStream
+//resultStreamDF.writeStream
 //.foreach(writer)
 //.outputMode("update")
 //.trigger(ProcessingTime("25 seconds"))
 //.start()
+//.awaitTermination()
