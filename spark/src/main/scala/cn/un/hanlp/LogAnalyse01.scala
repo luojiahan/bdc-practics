@@ -24,6 +24,7 @@ object LogAnalyse01 {
   System.setProperty("HADOOP_USER_NAME", "root")
 
   def main(args: Array[String]): Unit = {
+    val begTime = System.currentTimeMillis()
     val spark: SparkSession = SparkSession.builder()
       .appName(this.getClass.getSimpleName.stripSuffix("$"))
       .master("local[*]")
@@ -49,7 +50,7 @@ object LogAnalyse01 {
     val resultRDD: RDD[(String, Int)] = oneUrlRDD.map((_, 1)).reduceByKey(_ + _).sortBy(_._2, false)
 
     // 测试用户的日志
-    println(s"Count = ${resultRDD.count()}, Example = ${resultRDD.take(5).mkString(",")}")
+//    println(s"Count = ${resultRDD.count()}, Example = ${resultRDD.take(5).mkString(",")}")
 
     //将结果写入本地文件
 //    val writer = new PrintWriter(new File("F:\\result\\result01.txt"))
@@ -73,54 +74,38 @@ object LogAnalyse01 {
 
 
     // 将结果输出到mysql数据库中
-    // 这是在每个分区中，e就是一个分区中数据访问和操作的迭代器
-    resultRDD.foreachPartition(iter => {
-      // 在每个分区中建立写入到mysql的连接而不是最后结果汇总到dirver端再写入，
-      // 这样可以充分利用分布式集群的优势，否则海量数据汇总到driver端再写入，耗时会非常非常久，不合适
-      // 同样的，注意不要或者避免再driver端做asList或者toArray等操作，这样会把数据加载到内存，处理海量数据时，很可能造成内存溢出
-      Class.forName("com.mysql.jdbc.Driver")
+    resultRDD.foreachPartition(saveAsMySQL)
 
-      var connection: Connection = null
-      var preparedStatement: PreparedStatement = null
-
-      try {
-        connection = DriverManager.getConnection("jdbc:mysql://hdp103:3306/test?CharacterEncoding=UTF-8", "root", "199037")
-
-        // 这里使用preparedStatement，有几个好处。第一个是参数可调整，拼接方式。第二个是防止sql注入，第三个是会有编译缓存，执行起来更快
-        preparedStatement = connection.prepareStatement("insert into url_count (url, count) values(?, ?)")
-
-        // 遍历每个分区中的数据，写入到mysql中
-        iter.foreach(e => {
-          preparedStatement.setString(1, e._1)
-          preparedStatement.setInt(2, e._2)
-
-          // 这里实际企业生产中，遇到批量更新，可以使用preparedStatement.addBatch（）,然后使用条件来判断什么时候preparedStatement.executeBatch()
-          // 在处理海量数据过程中，一般都不会一条一条插入，而是批量插入。一般是200到几百条做一次插入，具体看内存和插入数据量。太多可能会导致内存不足
-          preparedStatement.executeLargeUpdate()
-        })
-      } catch {
-        case e: Exception => {
-          println("出现sql异常了，一般做事务回滚操作，rollback")
-          println(e)
-        }
-      } finally {
-        // 关流
-        try {
-          if (preparedStatement != null) {
-            preparedStatement.close()
-          }
-          if (connection != null) {
-            connection.close()
-          }
-        } catch {
-          case e: Exception => {
-            println("sql关流失败了")
-          }
-        }
-      }
-    })
-
+    val endTime = System.currentTimeMillis()
+    println("用时：" + (endTime - begTime) / 1000 + "s")
     sc.stop()
+
+  }
+  def saveAsMySQL(iter:Iterator[(String,Int)]):Unit={
+    //创建mysql链接
+    Class.forName("com.mysql.jdbc.Driver") //注册Oracle的驱动
+    var conn: Connection = null
+    var pstmt: PreparedStatement = null
+    try {
+      conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/test?CharacterEncoding=UTF-8&useSSL=false",
+        "root",
+        "199037wW")
+      conn.setAutoCommit(false) //设置手动提交
+      pstmt = conn.prepareStatement("insert into url_count (url, count) values(?, ?)")
+      //循环遍历写入数据库
+      iter.foreach(f=>{
+        pstmt.setString(1, f._1)
+        pstmt.setInt(2, f._2)
+        pstmt.addBatch()
+      })
+      pstmt.executeBatch() // 执行批量处理
+      conn.commit() //手工提交
+    } catch {
+      case e: Exception => e.printStackTrace()
+    } finally {
+      pstmt.close()
+      conn.close()
+    }
 
   }
 }
