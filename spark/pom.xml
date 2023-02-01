@@ -43,6 +43,7 @@
       <version>${scala.version}</version>
       <scope>compile</scope>
     </dependency>
+    <!--依赖Scala语言-->
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
@@ -56,32 +57,42 @@
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming_${spark.scala.version}</artifactId>
-      <version>${spark.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming-kafka-0-10_${spark.scala.version}</artifactId>
+      <artifactId>spark-sql_${spark.scala.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-mllib_${spark.scala.version}</artifactId>
       <version>${spark.version}</version>
-      <!--<scope>provided</scope>-->
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-sql_${spark.scala.version}</artifactId>
+      <artifactId>spark-hive_${spark.scala.version}</artifactId>
       <version>${spark.version}</version>
-      <!--<scope>provided</scope>-->
     </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-hive-thriftserver_${spark.scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming_${spark.scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <!--spark-streaming+Kafka依赖-->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming-kafka-0-10_${spark.scala.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <!--StructuredStreaming+Kafka依赖-->
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql-kafka-0-10_${spark.scala.version}</artifactId>
       <version>${spark.version}</version>
-      <!--<scope>provided</scope>-->
     </dependency>
+
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
@@ -110,18 +121,13 @@
       <version>${hadoop.version}</version>
     </dependency>
 
-
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-hive_${spark.scala.version}</artifactId>
-      <version>${spark.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-compiler-plugin</artifactId>
       <version>${maven_compiler_plugin.version}</version>
       <type>maven-plugin</type>
     </dependency>
+
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
@@ -135,37 +141,27 @@
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.41</version>
+      <version>1.2.74</version>
     </dependency>
   </dependencies>
 
   <build>
     <finalName>spark</finalName>
-    <sourceDirectory>src/main/scala</sourceDirectory>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-archetype-plugin</artifactId>
-        <version>3.0.1</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven_compiler_plugin.version}</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.0.2</version>
-        <configuration>
-          <encoding>UTF-8</encoding>
-        </configuration>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.4.6</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
+
 
 </project>

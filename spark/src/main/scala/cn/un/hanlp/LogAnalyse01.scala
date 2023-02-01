@@ -16,6 +16,7 @@ import java.sql.{Connection, DriverManager, PreparedStatement}
  * 首页网址搜索频率统计，按首页网址分组聚合，根据频率进行降序排列；
  * 文件保存路径为：/root/retrievelog/output/url/part-00000，结果无需分区；
  * 示例结果：(www.tudou.com,28714) 表示网站URLwww.tudou.com的访问次数为28714。
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogAnalyse01 /root/spark.jar
  */
 object LogAnalyse01 {
 
@@ -74,7 +75,7 @@ object LogAnalyse01 {
 
 
     // 将结果输出到mysql数据库中
-    resultRDD.foreachPartition(saveAsMySQL)
+//    resultRDD.foreachPartition(saveAsMySQL)
 
     val endTime = System.currentTimeMillis()
     println("用时：" + (endTime - begTime) / 1000 + "s")
