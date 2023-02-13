@@ -14,13 +14,14 @@ object KPIIP {
   System.setProperty("HADOOP_USER_NAME", "root")
 
   def main(args: Array[String]): Unit = {
+    val begTime = System.currentTimeMillis()
     val spark: SparkSession = SparkSession.builder()
       .appName(this.getClass.getSimpleName.stripSuffix("$"))
       .master("local[*]")
       .getOrCreate()
     val sc: SparkContext = spark.sparkContext
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
-    sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
+    sc.hadoopConfiguration.set("fs.defaultFS", hdfs_url)
 
     val hdfs: FileSystem = FileSystem.get(
       new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
@@ -52,6 +53,9 @@ object KPIIP {
       .repartition(1)
       .saveAsTextFile(data_output2)
 
+    val endTime = System.currentTimeMillis()
+    println("用时：" + (endTime - begTime) / 1000 + "s")
+    sc.stop()
 
   }
 }

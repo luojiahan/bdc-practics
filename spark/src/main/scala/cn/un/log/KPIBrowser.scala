@@ -14,13 +14,14 @@ object KPIBrowser {
   System.setProperty("HADOOP_USER_NAME", "root")
 
   def main(args: Array[String]): Unit = {
+    val begTime = System.currentTimeMillis()
     val spark: SparkSession = SparkSession.builder()
       .appName(this.getClass.getSimpleName.stripSuffix("$"))
       .master("local[*]")
       .getOrCreate()
     val sc: SparkContext = spark.sparkContext
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
-    sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
+    sc.hadoopConfiguration.set("fs.defaultFS", hdfs_url)
 
     //1读取文件
     val file_path: String = hdfs_url + "/input/journal.log"
@@ -59,5 +60,9 @@ object KPIBrowser {
     result4.map(x => x._1 + "\t" + x._2)
       .repartition(1)
       .saveAsTextFile(data_output4)
+
+    val endTime = System.currentTimeMillis()
+    println("用时：" + (endTime - begTime) / 1000 + "s")
+    sc.stop()
   }
 }

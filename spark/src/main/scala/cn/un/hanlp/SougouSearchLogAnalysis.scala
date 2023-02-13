@@ -57,7 +57,7 @@ object SougouSearchLogAnalysis {
         .getOrCreate()
       val sc: SparkContext = spark.sparkContext
       sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
-      sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
+      sc.hadoopConfiguration.set("fs.defaultFS", hdfs_url)
 
       // TODO: 1. 本地读取SogouQ用户查询日志数据。本地文件需要加file:///
       val input_path: String = hdfs_url+ "/input/SogouQ.sample"

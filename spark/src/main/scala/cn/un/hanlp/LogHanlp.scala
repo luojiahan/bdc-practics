@@ -36,7 +36,7 @@ object LogHanlp {
       .getOrCreate()
     val sc: SparkContext = spark.sparkContext
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
-    sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
+    sc.hadoopConfiguration.set("fs.defaultFS", hdfs_url)
 
     val hdfs: FileSystem = FileSystem.get(
       new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
