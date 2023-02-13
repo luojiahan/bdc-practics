@@ -11,7 +11,7 @@ import java.util
 import scala.collection.mutable
 
 /**
- * 需求：
+ * 需求3：
  * 查询关键词分析，使用[HanLP](https://so.csdn.net/so/search?q=HanLP&spm=1001.2101.3001.7020)对所有查询词（字段3）进行分词，
  * 按照分词进行分组聚合统计出现次数,结果写入本地/root/retrievelog/output/key/part-00000,格式见步骤说明。
  *
@@ -37,6 +37,9 @@ object LogHanlp {
     val sc: SparkContext = spark.sparkContext
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
     sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
+
+    val hdfs: FileSystem = FileSystem.get(
+      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
 
     val input_path: String = hdfs_url+ "/input/reduced.txt"
     val fileRDD: RDD[String] = sc.textFile(input_path)
@@ -68,9 +71,6 @@ object LogHanlp {
 
     //数据保存位置
     val data_output: String = hdfs_url + "/root/retrievelog/output/key"
-
-    val hdfs: FileSystem = FileSystem.get(
-      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
     if (hdfs.exists(new Path(data_output)))
       hdfs.delete(new Path(data_output), true)
 

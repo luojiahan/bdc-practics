@@ -30,6 +30,9 @@ object LogRank {
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
     sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
 
+    val hdfs: FileSystem = FileSystem.get(
+      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
+
     //加一个过滤
     val input_path: String = hdfs_url+ "/input/reduced.txt"
     val fileRDD: RDD[String] = sc.textFile(input_path)
@@ -56,9 +59,6 @@ object LogRank {
 
     //数据保存位置
     val data_output: String = hdfs_url + "/output/result5"
-
-    val hdfs: FileSystem = FileSystem.get(
-      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
     if (hdfs.exists(new Path(data_output)))
       hdfs.delete(new Path(data_output), true)
 
