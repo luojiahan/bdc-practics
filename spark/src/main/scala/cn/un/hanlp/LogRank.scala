@@ -14,7 +14,7 @@ import org.apache.spark.{SparkConf, SparkContext}
  * 最优Rank频率=URL最优Rank次数 / 条目总数，结果百分号前面保留两位小数，格式参考：11.11%；
  * 文件保存路径为：/root/retrievelog/output/rank/part-00000。
  */
-object LogAnalyse05 {
+object LogRank {
 
   private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名

@@ -21,7 +21,7 @@ import scala.collection.mutable
  * 文件保存路径为：/root/retrievelog/output/key/part-00000，结果无需分区；
  * 示例结果：(69239,物资)表示关键词物资的词频计数为69239。
  */
-object LogAnalyse03 {
+object LogHanlp {
 
   private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名

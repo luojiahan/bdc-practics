@@ -18,7 +18,7 @@ import java.sql.{Connection, DriverManager, PreparedStatement}
  * 示例结果：(www.tudou.com,28714) 表示网站URLwww.tudou.com的访问次数为28714。
  * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogAnalyse01 /root/spark.jar
  */
-object LogAnalyse01 {
+object LogUrlCount {
 
   private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名
@@ -34,6 +34,9 @@ object LogAnalyse01 {
     val sc: SparkContext = spark.sparkContext
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
     sc.hadoopConfiguration.set("fs.defaultFS", "hdfs://hadoop000:9000")
+
+    val hdfs: FileSystem = FileSystem.get(
+      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
 
     val input_path: String = hdfs_url+ "/input/reduced.txt"
     val fileRDD: RDD[String] = sc.textFile(input_path)
@@ -62,9 +65,6 @@ object LogAnalyse01 {
 
     //数据保存位置
     val data_output: String = hdfs_url + "/root/retrievelog/output/url"
-
-    val hdfs: FileSystem = FileSystem.get(
-      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
     if (hdfs.exists(new Path(data_output)))
       hdfs.delete(new Path(data_output), true)
 
