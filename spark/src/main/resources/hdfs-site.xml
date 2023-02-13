@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <!-- 如果是通过公网IP访问阿里云上内网搭建的集群 -->
+    <property>
+        <name>dfs.client.use.datanode.hostname</name>
+        <value>true</value>
+        <description>only cofig in clients</description>
+    </property>
+    <property>
+        <name>dfs.datanode.use.datanode.hostname</name>
+        <value>true</value>
+    </property>
+
+</configuration>
