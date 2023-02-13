@@ -21,7 +21,7 @@ class HbaseSink extends ForeachWriter[Row] {
   }
 
   override def process(value: Row): Unit = {
-    //create 't1','iot_info','device_type','count_device','avg_signal'
+    //create 't1','iot_info'
     //rowkey:调度编号+车牌号+时间戳
     //var rowkey = value.deployNum + value.plateNum + value.timeStr
     var rowkey = value.getAs[String](0)
