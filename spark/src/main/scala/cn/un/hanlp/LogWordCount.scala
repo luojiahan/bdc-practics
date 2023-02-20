@@ -22,7 +22,7 @@ import scala.collection.mutable
  * 示例结果：(69239,物资)表示关键词物资的词频计数为69239。
  * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogHanlp /root/spark.jar
  */
-object LogHanlp {
+object LogWordCount {
 
   private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名
