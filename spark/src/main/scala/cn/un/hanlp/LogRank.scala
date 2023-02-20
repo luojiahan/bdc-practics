@@ -13,6 +13,7 @@ import org.apache.spark.{SparkConf, SparkContext}
  * 过滤用户点击顺序号为1的数据，过滤返回结果中排名为1的数据，求出URL最优Rank数；
  * 最优Rank频率=URL最优Rank次数 / 条目总数，结果百分号前面保留两位小数，格式参考：11.11%；
  * 文件保存路径为：/root/retrievelog/output/rank/part-00000。
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogRank /root/spark.jar
  */
 object LogRank {
 
@@ -24,7 +25,7 @@ object LogRank {
     val spark: SparkSession = SparkSession.builder()
       .appName(this.getClass.getSimpleName.stripSuffix("$"))
       .master("local[*]")
-      .config("spark.sql.shuffle.partitions", "3")
+//      .config("spark.sql.shuffle.partitions", "3")
       .getOrCreate()
     val sc: SparkContext = spark.sparkContext
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
@@ -58,7 +59,7 @@ object LogRank {
     val resultRDD: RDD[String] = sc.parallelize(List(resultStr))
 
     //数据保存位置
-    val data_output: String = hdfs_url + "/output/result5"
+    val data_output: String = hdfs_url + "/root/retrievelog/output/rank"
     if (hdfs.exists(new Path(data_output)))
       hdfs.delete(new Path(data_output), true)
 

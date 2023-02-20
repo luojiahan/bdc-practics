@@ -16,7 +16,7 @@ import java.sql.{Connection, DriverManager, PreparedStatement}
  * 首页网址搜索频率统计，按首页网址分组聚合，根据频率进行降序排列；
  * 文件保存路径为：/root/retrievelog/output/url/part-00000，结果无需分区；
  * 示例结果：(www.tudou.com,28714) 表示网站URLwww.tudou.com的访问次数为28714。
- * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogAnalyse01 /root/spark.jar
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogUrlCount /root/spark.jar
  */
 object LogUrlCount {
 
@@ -29,7 +29,7 @@ object LogUrlCount {
     val spark: SparkSession = SparkSession.builder()
       .appName(this.getClass.getSimpleName.stripSuffix("$"))
       .master("local[*]")
-      .config("spark.sql.shuffle.partitions", "3")
+//      .config("spark.sql.shuffle.partitions", "3")
       .getOrCreate()
     val sc: SparkContext = spark.sparkContext
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")

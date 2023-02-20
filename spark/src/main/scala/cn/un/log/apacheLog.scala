@@ -4,6 +4,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.storage.StorageLevel
 
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -38,6 +39,9 @@ object apacheLog {
       .filter(log => log != null && log.trim.split("\\s+").length > 11)
       //status大于400，HTTP错误
       .filter(log => log.trim.split("\\s+")(8).toInt < 400)
+
+    // 数据使用多次，进行缓存操作，使用count触发
+    logRDD.persist(StorageLevel.MEMORY_AND_DISK)
 
     println("==========================需求1==========================")
     // 需求1：页面访问量统计（PV）
