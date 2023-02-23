@@ -31,7 +31,7 @@ object IotStreamingOnlineSQL {
     // 2. 从Kafka读取数据，底层采用New Consumer API
     val iotStreamDF: DataFrame = spark.readStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", "hdp101:9092,hdp102:9092,hdp103:9092")
+      .option("kafka.bootstrap.servers", "47.92.219.91:9092")
       .option("subscribe", "iotTopic")
 //      .option("startingOffsets", "earliest")
 //      .option("endingOffsets", "latest")

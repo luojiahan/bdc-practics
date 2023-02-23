@@ -16,9 +16,9 @@ import java.sql.{Connection, DriverManager, PreparedStatement}
  * 首页网址搜索频率统计，按首页网址分组聚合，根据频率进行降序排列；
  * 文件保存路径为：/root/retrievelog/output/url/part-00000，结果无需分区；
  * 示例结果：(www.tudou.com,28714) 表示网站URLwww.tudou.com的访问次数为28714。
- * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogUrlCount /root/spark.jar
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogUUID /root/spark.jar
  */
-object LogUrlCount {
+object LogUUID {
 
   private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名
@@ -45,27 +45,19 @@ object LogUrlCount {
     // 访问时间 用户ID [查询词] 该URL在返回结果中的排名 用户点击的顺序号 用户点击的URL
     val filterRDD: RDD[String] = fileRDD
       .filter(log => log != null && log.trim.split("\\s+").length == 6)
-    val urlRDD: RDD[String] = filterRDD.map(_.split("\\s+")(5))
+    val urlRDD: RDD[String] = filterRDD.map(_.split("\\s+")(1))
 
-    // 过滤以www开头的网址
-    val wwwRDD: RDD[String] = urlRDD.filter(_.startsWith("www"))
-    // 获取网址首页
-    val oneUrlRDD: RDD[String] = wwwRDD.map(_.split("/")(0))
-    // 计算结果
-    val resultRDD: RDD[(String, Int)] = oneUrlRDD.map((_, 1)).reduceByKey(_ + _).sortBy(_._2, false)
-
-    // 测试用户的日志
-//    println(s"Count = ${resultRDD.count()}, Example = ${resultRDD.take(5).mkString(",")}")
+    val resultRDD: RDD[(String, Int)] = urlRDD.map((_, 1)).reduceByKey(_ + _).sortBy(_._2, false)
 
     //将结果写入本地文件
-//    val writer = new PrintWriter(new File("F:\\result\\result01.txt"))
-//    val tuples = resultRDD.collect()
-//    for (elem <- tuples) {
-//      writer.write("("+elem._1 + "," + elem._2 + ")\n")
-//    }
+    val writer = new PrintWriter(new File("/root/retrievelog/output/uid"))
+    val tuples = resultRDD.collect()
+    for (elem <- tuples) {
+      writer.write("("+elem._1 + "," + elem._2 + ")\n")
+    }
 
     //数据保存位置
-    val data_output: String = hdfs_url + "/root/retrievelog/output/url"
+    val data_output: String = hdfs_url + "/root/retrievelog/output/uid"
     if (hdfs.exists(new Path(data_output)))
       hdfs.delete(new Path(data_output), true)
 

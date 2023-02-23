@@ -12,7 +12,7 @@ object MockIotDatas {
   def main(args: Array[String]): Unit = {
     // 发送Kafka Topic
     val props = new Properties()
-    props.put("bootstrap.servers", "hdp101:9092")
+    props.put("bootstrap.servers", "47.92.219.91:9092")
     props.put("acks", "1")
     props.put("retries", "3")
     props.put("key.serializer", classOf[StringSerializer].getName)

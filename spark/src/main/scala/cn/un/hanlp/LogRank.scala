@@ -36,6 +36,7 @@ object LogRank {
 
     //加一个过滤
     val input_path: String = hdfs_url+ "/input/reduced.txt"
+    // 访问时间 用户ID [查询词] 该URL在返回结果中的排名 用户点击的顺序号 用户点击的URL
     val fileRDD: RDD[String] = sc.textFile(input_path)
       .filter(_.split("\t").size==5).filter(_.split("\t")(3).split(" ").size==2)
 

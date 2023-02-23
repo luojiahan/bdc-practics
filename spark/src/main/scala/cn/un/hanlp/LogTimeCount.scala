@@ -92,7 +92,7 @@ object LogTimeCount {
       .sortBy(_._2, ascending = false)
 
     //数据保存位置
-    val data_output: String = hdfs_url + "/root/retrievelog/output/hour"
+    val data_output: String = hdfs_url + "/root/retrievelog/output/time/"
     if (hdfs.exists(new Path(data_output)))
       hdfs.delete(new Path(data_output), true)
 

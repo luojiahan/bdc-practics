@@ -54,6 +54,7 @@ object LogClickCount {
     val fileRDD: RDD[String] = sc.textFile(input_path)
 
     // 在scala中，\s是用来匹配任何空白字符，当\放在最前面，前面得再放个\，或者在scala中用"""\s+"""
+    // 访问时间 用户ID [查询词] 该URL在返回结果中的排名 用户点击的顺序号 用户点击的URL
     val SogouRecordRDD: RDD[SogouRecord] = fileRDD
       // 过滤不合法数据，如null，分割后长度不等于6
       .filter(log => log != null && log.trim.split("\\s+").length == 6)
@@ -72,28 +73,20 @@ object LogClickCount {
         })
       })
 
-    val clickCountRDD: RDD[(String, String)] = SogouRecordRDD.flatMap(record => {
-      // 使用HanLP中文分词库进行标准分词
-      val terms: util.List[Term] = StandardTokenizer.segment(record.queryWords.trim)
-      // 将Java中集合对转换为Scala中集合对象
-      import scala.collection.JavaConverters._
-      val words: mutable.Buffer[String] = terms.asScala.map(_.word)
-      val userId: String = record.userId
-      words.map(word => (userId, word))
-    })
-    val clickCount: RDD[((String, String), Int)] = clickCountRDD
-      .filter(t => !t._2.equals(".") && !t._2.equals("+"))
+    val clickCountRDD: RDD[(String, String)] = SogouRecordRDD.map(line => (line.userId, line.queryWords))
+    val resultRDD: RDD[((String, String), Int)] = clickCountRDD
+//      .filter(t => !t._2.equals(".") && !t._2.equals("+"))
       .map((_, 1))
       .reduceByKey(_ + _)
       .sortBy(_._2, false)
 
     //数据保存位置
-    val data_output: String = hdfs_url + "/root/retrievelog/output/click"
+    val data_output: String = hdfs_url + "/root/retrievelog/output/userkey/"
     if (hdfs.exists(new Path(data_output)))
       hdfs.delete(new Path(data_output), true)
 
     //将结果保存到HDFS
-    clickCount.map(x => "("+x._1+","+x._2+")")
+    resultRDD.map(x => "("+x._1+","+x._2+")")
       .repartition(1)
       .saveAsTextFile(data_output)
 
