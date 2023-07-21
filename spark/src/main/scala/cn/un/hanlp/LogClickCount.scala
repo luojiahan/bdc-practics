@@ -3,11 +3,13 @@ package cn.un.hanlp
 import com.hankcs.hanlp.HanLP
 import com.hankcs.hanlp.seg.common.Term
 import com.hankcs.hanlp.tokenizer.StandardTokenizer
+import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
+import java.io.{File, PrintWriter}
 import java.util
 import scala.collection.mutable
 /**
@@ -41,14 +43,10 @@ object LogClickCount {
     val spark: SparkSession = SparkSession.builder()
       .appName(this.getClass.getSimpleName.stripSuffix("$"))
       .master("local[*]")
-//      .config("spark.sql.shuffle.partitions", "3")
       .getOrCreate()
     val sc: SparkContext = spark.sparkContext
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
     sc.hadoopConfiguration.set("fs.defaultFS", hdfs_url)
-
-    val hdfs: FileSystem = FileSystem.get(
-      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
 
     val input_path: String = hdfs_url+ "/input/reduced.txt"
     val fileRDD: RDD[String] = sc.textFile(input_path)
@@ -80,15 +78,12 @@ object LogClickCount {
       .reduceByKey(_ + _)
       .sortBy(_._2, false)
 
-    //数据保存位置
-    val data_output: String = hdfs_url + "/root/retrievelog/output/userkey/"
-    if (hdfs.exists(new Path(data_output)))
-      hdfs.delete(new Path(data_output), true)
-
-    //将结果保存到HDFS
+    //将结果写入本地文件
+    val out_path = "/root/retrievelog/output/userkey/"
+    FileUtils.deleteDirectory(new File(out_path))
     resultRDD.map(x => "("+x._1+","+x._2+")")
       .repartition(1)
-      .saveAsTextFile(data_output)
+      .saveAsTextFile("file://" + out_path)
 
     val endTime = System.currentTimeMillis()
     println("用时：" + (endTime - begTime) / 1000 + "s")

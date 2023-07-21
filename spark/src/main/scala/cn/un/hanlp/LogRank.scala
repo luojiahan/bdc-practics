@@ -1,9 +1,12 @@
 package cn.un.hanlp
 
+import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
+
+import java.io.{File, PrintWriter}
 
 /**
  * 需求5：最优Rank频率，结果写入本地/root/retrievelog/output/rank/part-00000,格式见步骤说明。
@@ -25,14 +28,10 @@ object LogRank {
     val spark: SparkSession = SparkSession.builder()
       .appName(this.getClass.getSimpleName.stripSuffix("$"))
       .master("local[*]")
-//      .config("spark.sql.shuffle.partitions", "3")
       .getOrCreate()
     val sc: SparkContext = spark.sparkContext
     sc.hadoopConfiguration.set("dfs.client.use.datanode.hostname", "true")
     sc.hadoopConfiguration.set("fs.defaultFS", hdfs_url)
-
-    val hdfs: FileSystem = FileSystem.get(
-      new java.net.URI(hdfs_url), new org.apache.hadoop.conf.Configuration())
 
     //加一个过滤
     val input_path: String = hdfs_url+ "/input/reduced.txt"
@@ -59,15 +58,12 @@ object LogRank {
     println(resultStr)
     val resultRDD: RDD[String] = sc.parallelize(List(resultStr))
 
-    //数据保存位置
-    val data_output: String = hdfs_url + "/root/retrievelog/output/rank"
-    if (hdfs.exists(new Path(data_output)))
-      hdfs.delete(new Path(data_output), true)
-
-    //将结果保存到HDFS
+    //将结果写入本地文件
+    val out_path = "/root/retrievelog/output/rank/"
+    FileUtils.deleteDirectory(new File(out_path))
     resultRDD.map(x => x + "%")
       .repartition(1)
-      .saveAsTextFile(data_output)
+      .saveAsTextFile("file://" + out_path)
 
     sc.stop()
   }

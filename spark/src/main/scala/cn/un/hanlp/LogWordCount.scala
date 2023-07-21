@@ -7,6 +7,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
+import java.io.{File, PrintWriter}
 import java.util
 import scala.collection.mutable
 
@@ -71,6 +72,13 @@ object LogWordCount {
       .map((_,1))
       .reduceByKey(_+_)
       .sortBy(_._2,false)
+
+    //将结果写入本地文件
+    val writer = new PrintWriter(new File("/root/retrievelog/output/key/"))
+    val tuples = resultRDD.collect()
+    for (elem <- tuples) {
+      writer.write("("+elem._1 + "," + elem._2 + ")\n")
+    }
 
     //数据保存位置
     val data_output: String = hdfs_url + "/root/retrievelog/output/key"
