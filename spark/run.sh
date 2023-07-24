@@ -1,12 +1,4 @@
 #!/bin/bash
-INSTALL_PATH=/opt/module
-
-check_process(){
-    pid=$(ps -ef 2>/dev/null | grep -v grep | grep -i $1 | awk '{print $2}')
-    ppid=$(netstat -nltp 2>/dev/null | grep $2 | awk '{print $7}' | cut -d '/' -f 1)
-    echo $pid
-    [[ "$pid" =~ "$ppid" ]] && [ "$ppid" ] && return 0 || return 1
-}
 
 main(){
     usage="Usage: $0 (uuid|url|time|key|rank|behavior|userkey)"
