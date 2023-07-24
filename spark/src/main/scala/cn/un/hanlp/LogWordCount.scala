@@ -2,6 +2,7 @@ package cn.un.hanlp
 
 import com.hankcs.hanlp.seg.common.Term
 import com.hankcs.hanlp.tokenizer.StandardTokenizer
+import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -21,7 +22,7 @@ import scala.collection.mutable
  * 统计搜索词出现次数，分组统计次数，词频降序排序；
  * 文件保存路径为：/root/retrievelog/output/key/part-00000，结果无需分区；
  * 示例结果：(69239,物资)表示关键词物资的词频计数为69239。
- * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogWordCount /root/spark.jar
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogWordCount /root/jars/spark.jar
  */
 object LogWordCount {
 
@@ -74,21 +75,11 @@ object LogWordCount {
       .sortBy(_._2,false)
 
     //将结果写入本地文件
-    val writer = new PrintWriter(new File("/root/retrievelog/output/key/"))
-    val tuples = resultRDD.collect()
-    for (elem <- tuples) {
-      writer.write("("+elem._1 + "," + elem._2 + ")\n")
-    }
-
-    //数据保存位置
-    val data_output: String = hdfs_url + "/root/retrievelog/output/key"
-    if (hdfs.exists(new Path(data_output)))
-      hdfs.delete(new Path(data_output), true)
-
-    //将结果保存到HDFS
+    val out_path = "/root/retrievelog/output/key/"
+    FileUtils.deleteDirectory(new File(out_path))
     resultRDD.map(x => "("+x._1+","+x._2+")")
       .repartition(1)
-      .saveAsTextFile(data_output)
+      .saveAsTextFile("file://" + out_path)
 
     val endTime = System.currentTimeMillis()
     println("用时：" + (endTime - begTime) / 1000 + "s")

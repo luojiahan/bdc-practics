@@ -23,7 +23,7 @@ import scala.collection.mutable
  * 文件保存路径为：/root/retrievelog/output/click/part-00000，结果无需分区；
  * 示例结果：((491312143310257,律师),1)表示用户491312143310257搜索关键词律师的词频计数为1。
  * cp hanlp/hanlp-1.8.2-release/hanlp-portable-1.8.2.jar software/spark-2.4.3-bin-hadoop2.7/jars/
- * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogClickCount /root/spark.jar
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogClickCount /root/jars/spark.jar
  */
 object LogClickCount {
   private val hdfs_url = "hdfs://hadoop000:9000"

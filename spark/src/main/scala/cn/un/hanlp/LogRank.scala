@@ -16,7 +16,7 @@ import java.io.{File, PrintWriter}
  * 过滤用户点击顺序号为1的数据，过滤返回结果中排名为1的数据，求出URL最优Rank数；
  * 最优Rank频率=URL最优Rank次数 / 条目总数，结果百分号前面保留两位小数，格式参考：11.11%；
  * 文件保存路径为：/root/retrievelog/output/rank/part-00000。
- * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogRank /root/spark.jar
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogRank /root/jars/spark.jar
  */
 object LogRank {
 

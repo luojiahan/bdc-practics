@@ -2,6 +2,7 @@ package cn.un.hanlp
 
 import com.hankcs.hanlp.seg.common.Term
 import com.hankcs.hanlp.tokenizer.StandardTokenizer
+import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -19,7 +20,7 @@ import scala.collection.mutable
  * 统计各小时用户查询搜索的数量，分组统计次数，词频降序排序；
  * 文件保存路径为：/root/retrievelog/output/hour/part-00000，结果无需分区；
  * 示例结果：(04,143)表示4时的用户查询搜索数量为为143。
- * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogTimeCount /root/spark.jar
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogTimeCount /root/jars/spark.jar
  */
 object LogTimeCount {
   private val hdfs_url = "hdfs://hadoop000:9000"
@@ -51,10 +52,12 @@ object LogTimeCount {
     val input_path: String = hdfs_url+ "/input/reduced.txt"
     val fileRDD: RDD[String] = sc.textFile(input_path)
 
-    // 在scala中，\s是用来匹配任何空白字符，当\放在最前面，前面得再放个\，或者在scala中用"""\s+"""
-    val SogouRecordRDD: RDD[SogouRecord] = fileRDD
-      // 过滤不合法数据，如null，分割后长度不等于6
+    // 过滤不合法数据，如null，分割后长度不等于6
+    val filterRDD: RDD[String] = fileRDD
       .filter(log => log != null && log.trim.split("\\s+").length == 6)
+
+    // 在scala中，\s是用来匹配任何空白字符，当\放在最前面，前面得再放个\，或者在scala中用"""\s+"""
+    val SogouRecordRDD: RDD[SogouRecord] = filterRDD
       // 对每个分区中数据进行解析，封装到SogouRecord
       .mapPartitions(iter => {
         iter.map(log => {
@@ -92,21 +95,12 @@ object LogTimeCount {
       .reduceByKey(_ + _) // 分组统计次数
       .sortBy(_._2, ascending = false)
 
-    //将结果写入本地文件
-    val writer = new PrintWriter(new File("/root/retrievelog/output/time/"))
-    val tuples = hourSearchCount.collect()
-    for (elem <- tuples) {
-      writer.write("("+elem._1 + "," + elem._2 + ")\n")
-    }
-
     //将结果保存到HDFS
-    val data_output: String = hdfs_url + "/root/retrievelog/output/time/"
-    if (hdfs.exists(new Path(data_output)))
-      hdfs.delete(new Path(data_output), true)
-
+    val out_path = "/root/retrievelog/output/time/"
+    FileUtils.deleteDirectory(new File(out_path))
     hourSearchCount.map(x => "("+x._1+","+x._2+")")
       .repartition(1)
-      .saveAsTextFile(data_output)
+      .saveAsTextFile("file://" + out_path)
 
     val endTime = System.currentTimeMillis()
     println("用时：" + (endTime - begTime) / 1000 + "s")
