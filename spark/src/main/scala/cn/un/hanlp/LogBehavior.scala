@@ -1,13 +1,11 @@
 package cn.un.hanlp
 
 import org.apache.commons.io.FileUtils
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-import java.io.{File, PrintWriter}
-import java.sql.{Connection, DriverManager, PreparedStatement}
+import java.io.File
 
 /**
  * 需求1：

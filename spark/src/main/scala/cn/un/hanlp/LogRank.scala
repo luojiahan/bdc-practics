@@ -1,12 +1,11 @@
 package cn.un.hanlp
 
 import org.apache.commons.io.FileUtils
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
 
-import java.io.{File, PrintWriter}
+import java.io.File
 
 /**
  * 需求5：最优Rank频率，结果写入本地/root/retrievelog/output/rank/part-00000,格式见步骤说明。

@@ -3,12 +3,12 @@ package cn.un.hanlp
 import com.hankcs.hanlp.seg.common.Term
 import com.hankcs.hanlp.tokenizer.StandardTokenizer
 import org.apache.commons.io.FileUtils
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-import java.io.{File, PrintWriter}
+import java.io.File
 import java.util
 import scala.collection.mutable
 /**
@@ -20,9 +20,9 @@ import scala.collection.mutable
  * 统计各小时用户查询搜索的数量，分组统计次数，词频降序排序；
  * 文件保存路径为：/root/retrievelog/output/hour/part-00000，结果无需分区；
  * 示例结果：(04,143)表示4时的用户查询搜索数量为为143。
- * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogTimeCount /root/jars/spark.jar
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogTime /root/jars/spark.jar
  */
-object LogTimeCount {
+object LogTime {
   private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名
   System.setProperty("HADOOP_USER_NAME", "root")

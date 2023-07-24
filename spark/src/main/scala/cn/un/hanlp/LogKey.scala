@@ -22,9 +22,9 @@ import scala.collection.mutable
  * 统计搜索词出现次数，分组统计次数，词频降序排序；
  * 文件保存路径为：/root/retrievelog/output/key/part-00000，结果无需分区；
  * 示例结果：(69239,物资)表示关键词物资的词频计数为69239。
- * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogWordCount /root/jars/spark.jar
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogKey /root/jars/spark.jar
  */
-object LogWordCount {
+object LogKey {
 
   private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名

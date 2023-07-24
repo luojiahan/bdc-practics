@@ -1,13 +1,11 @@
 package cn.un.hanlp
 
 import org.apache.commons.io.FileUtils
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
-import java.io.{File, PrintWriter}
-import java.sql.{Connection, DriverManager, PreparedStatement}
+import java.io.File
 
 /**
  * 需求1：
@@ -17,9 +15,9 @@ import java.sql.{Connection, DriverManager, PreparedStatement}
  * 首页网址搜索频率统计，按首页网址分组聚合，根据频率进行降序排列；
  * 文件保存路径为：/root/retrievelog/output/url/part-00000，结果无需分区；
  * 示例结果：(www.tudou.com,28714) 表示网站URLwww.tudou.com的访问次数为28714。
- * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogUrlCount /root/jars/spark.jar
+ * spark-submit --master spark://hadoop000:7077 --class cn.un.hanlp.LogUrl /root/jars/spark.jar
  */
-object LogUrlCount {
+object LogUrl {
 
   private val hdfs_url = "hdfs://hadoop000:9000"
   // 设置 hadoop用户名
