@@ -10,6 +10,7 @@
   <modules>
     <module>spark</module>
     <module>mr</module>
+      <module>train</module>
   </modules>
 
 </project>
