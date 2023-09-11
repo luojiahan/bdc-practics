@@ -80,7 +80,7 @@
                     <archive>
                         <manifest>
                             <!-- 此处指定main方法入口的class -->
-                            <mainClass>com.atguigu.hadoop.flowsum.FlowsumDriver</mainClass>
+                            <mainClass>com.qingjiao.staff.WordCountTest</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
