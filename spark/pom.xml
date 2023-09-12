@@ -164,7 +164,7 @@
   </dependencies>
 
   <build>
-    <finalName>spark</finalName>
+    <finalName>sparkwordcount</finalName>
     <plugins>
       <!-- 该插件用来让maven能够编译、测试、运行scala项目的 -->
       <plugin>

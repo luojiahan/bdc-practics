@@ -1,11 +1,13 @@
 package cn.un.log
 
+import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.storage.StorageLevel
 
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -59,9 +61,11 @@ object apacheLog {
     val result1: RDD[(String, Int)] = pvRDD.map((_, 1)).reduceByKey(_ + _)
 
     //数据保存位置
-    val data_output1: String = hdfs_url + "/internetlogs/pv"
-    if (hdfs.exists(new Path(data_output1)))
-      hdfs.delete(new Path(data_output1), true)
+    //val data_output1: String = hdfs_url + "/internetlogs/pv"
+    //if (hdfs.exists(new Path(data_output1)))
+    //  hdfs.delete(new Path(data_output1), true)
+    val data_output1: String = "file://root/internetlogs/pv/"
+    FileUtils.deleteDirectory(new File(data_output1))
 
     //将结果保存到HDFS
     result1.map(x => x._1 + "\t" + x._2)
@@ -73,9 +77,11 @@ object apacheLog {
     val ipRDD: RDD[String] = logRDD.map(_.split("\\s+")(0))
     val result2: RDD[(String, Int)] = ipRDD.map((_, 1)).reduceByKey(_ + _)
 
-    val data_output2: String = hdfs_url + "/internetlogs/ip"
-    if (hdfs.exists(new Path(data_output2)))
-      hdfs.delete(new Path(data_output2), true)
+    //val data_output2: String = hdfs_url + "/internetlogs/ip"
+    //if (hdfs.exists(new Path(data_output2)))
+    //  hdfs.delete(new Path(data_output2), true)
+    val data_output2: String = "file:///root/internetlogs/ip/"
+    FileUtils.deleteDirectory(new File(data_output2))
 
     result2.map(x => x._1 + "\t" + x._2)
       .repartition(1)
@@ -96,9 +102,11 @@ object apacheLog {
     // 测试用户的日志
 //    println(s"Count = ${timeRDD.count()}, Example = ${timeRDD.take(3).mkString(",")}")
 
-    val data_output3: String = hdfs_url + "/internetlogs/time"
-    if (hdfs.exists(new Path(data_output3)))
-      hdfs.delete(new Path(data_output3), true)
+    //val data_output3: String = hdfs_url + "/internetlogs/time"
+    //if (hdfs.exists(new Path(data_output3)))
+    //  hdfs.delete(new Path(data_output3), true)
+    val data_output3: String = "file:///root/internetlogs/time/"
+    FileUtils.deleteDirectory(new File(data_output3))
 
     result3.map(x => x._1 + "\t" + x._2)
       .repartition(1)
@@ -118,9 +126,11 @@ object apacheLog {
     })
     val result4: RDD[(String, Int)] = browserRDD.map((_, 1)).reduceByKey(_ + _)
 
-    val data_output4: String = hdfs_url + "/internetlogs/browser"
-    if (hdfs.exists(new Path(data_output4)))
-      hdfs.delete(new Path(data_output4), true)
+    //val data_output4: String = hdfs_url + "/internetlogs/browser"
+    //if (hdfs.exists(new Path(data_output4)))
+    //  hdfs.delete(new Path(data_output4), true)
+    val data_output4: String = "file:///root/internetlogs/browser/"
+    FileUtils.deleteDirectory(new File(data_output4))
 
     result4.map(x => x._1 + "\t" + x._2)
       .repartition(1)

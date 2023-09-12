@@ -48,6 +48,7 @@ public class KPITime {
 
     public static void main(String[] args) throws Exception {
         // 自动快速地使用缺省Log4j环境
+        long startTime = System.currentTimeMillis();
         BasicConfigurator.configure();
         // 对应于HDFS中文件所在的位置路径
         String input = "hdfs://hadoop000:9000/input/journal.log";
@@ -90,6 +91,9 @@ public class KPITime {
 
         // 启动任务
         JobClient.runJob(conf);
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+        System.out.println("用时: " + executionTime / 1000  + "s");
         System.exit(0);
     }
 }

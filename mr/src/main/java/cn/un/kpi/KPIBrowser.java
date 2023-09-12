@@ -47,6 +47,7 @@ public class KPIBrowser {
 
     public static void main(String[] args) throws Exception {
         // 自动快速地使用缺省Log4j环境
+        long startTime = System.currentTimeMillis();
         BasicConfigurator.configure();
         String input = "hdfs://hadoop000:9000/input/journal.log";
         String output = "hdfs://hadoop000:9000/internetlogs/browser";
@@ -88,6 +89,9 @@ public class KPIBrowser {
 
         // 启动任务
         JobClient.runJob(conf);
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+        System.out.println("用时: " + executionTime / 1000  + "s");
         System.exit(0);
     }
 }
